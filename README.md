@@ -1,14 +1,38 @@
-# Vite + React
+# 재사용성이 높은 코드를 설계하는 방법
 
-This is a [Vite](https://vitejs.dev) project together with React.
+> 현재 이 문서는 마크다운을 HTML로 변환하면 의도한 대로 나오지 않습니다. 마크타운 문법 상태로 읽어주시면 감사하겠습니다.
 
-[![Edit in CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/github/codesandbox/codesandbox-template-vite-react/main)
+공통 컴포넌트나 공통 유틸 함수를 개발하다보면 use case에 대해 어디까지 내부에서 대응해야 하는지 고민이 생깁니다.
 
-[Configuration](https://codesandbox.io/docs/projects/learn/setting-up/tasks) `.codesandbox/tasks.json` has been added to optimize it for [CodeSandbox](https://codesandbox.io/dashboard).
+1. 첫번째는 예상되는 경우를 내부에서 대응해주는 것입니다.
+가장 이상적인 사용 방법이 아니더라도 예상되는 케이스들을 내부에서 대응해서 정상적으로 동작하게 합니다.
 
-## Resources
+2. 두번째는 에러를 던지는 것입니다.
+제작자가 의도한 사용 방법이 아닐 경우 에러를 던져 사용자로 하여금 수정하도록 합니다.
 
-- [CodeSandbox — Docs](https://codesandbox.io/docs/projects)
-- [CodeSandbox — Discord](https://discord.gg/Ggarp3pX5H)
-- [Vite — GitHub](https://github.com/vitejs/vite)
-- [Vite — Docs](https://vitejs.dev/guide/)
+3. 마지막 세번째는 사용 규칙을 문서화하고 이를 따르지 않을 때 발생하는 문제는 사용자가 책임지도록 하는 것입니다.
+아무런 대응도 에러도 던지지 않았으니 당연히 문제가 발생할 것이고, 이상을 감지한 사용자가 문서를 다시 읽어보며 잘못된 사용 방식을 수정합니다.
+
+이곳에선 <Input /> 공통 컴포넌트를 예시로 위의 세가지 케이스를 작성해보았습니다.
+
+기본적으로 <Input /> 컴포넌트는 다음과 같은 기능을 합니다.
+
+- 합성 컴포넌트로 label과 bottom message를 포함하는 <Input /> 컴포넌트와, input tag만 다루는 <Input.TextField /> 컴포넌트로 구성됩니다.
+- <Input />에서는 children으로 들어오는 <Input.TextField />가 prop으로 id를 받지 않으면 임의로 id를 넣어줍니다. 이는 label과 연결하기 위함입니다.
+
+```tsx
+<Input>ㄴ
+    <Input.TextField />
+</Input>
+```
+
+저는 이를 첫번째로 언급한 '예상되는 경우를 내부에서 대응해주는 것'이라고 생각했습니다.
+
+이를 기반으로 만든 <InputThrowError />와 <StrictInput />은 각각 두번째, 세번째 경우의 간단한 예시입니다.
+<InputThrowError />는 <Input.TextField />가 prop으로 id를 받아오지 않으면 에러를 던집니다.
+<StrictInput />은 이 컴포넌트를 사용할 때의 규칙을 명시하고(여기선 간단하게 JsDoc으로) 그외에 별다른 대처를 하지 않았습니다.
+
+물론 현재 <Input />에서는 `useId`라는 커스텀 훅을 통해 label과 input을 이어줄 id를 자체적으로 만들어줘 사용하는 곳에서 고민할 필요가 없다는 장점이 있습니다.
+따라서 제 고민에 완벽한 예시는 되지 않을 수 있지만, 당장 이 이상으로 떠오르는 케이스가 없어서 단순히 이해를 조금이라도 돕기 위해 작성했다고만 봐주시면 감사하겠습니다.
+
+당연히 정답이 없고 상황에 맞게 작성하는 것이지만, 이에 대한 경험이나 참고할 만 한 문서가 있다면 큰 도움이 될 것 같습니다.
